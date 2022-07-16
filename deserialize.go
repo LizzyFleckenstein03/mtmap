@@ -23,7 +23,7 @@ type ErrInvalidNodeName struct {
 }
 
 func (e ErrInvalidNodeName) Error() string {
-	return fmt.Sprintf("invalid node %v", e.Name)
+	return fmt.Sprintf("invalid node \"%v\"", e.Name)
 }
 
 type ErrInvalidNodeId struct {
