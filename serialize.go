@@ -156,7 +156,16 @@ func Serialize(blk *MapBlk, w io.Writer, idNameMap map[string]mt.Content) error 
 		return err
 	}
 
+	var exists = make(map[mt.Content]struct{})
+	for i := 0; i < 4096; i++ {
+		exists[blk.Param0[i]] = struct{}{}
+	}
+
 	for name, id := range idNameMap {
+		if _, ok := exists[id]; !ok {
+			continue
+		}
+
 		if err := binary.Write(w, binary.BigEndian, &id); err != nil {
 			return err
 		}
