@@ -153,11 +153,21 @@ func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 
 	var localNameIdMap = make(map[mt.Content]string)
 	for i := 0; i < 4096; i++ {
-		if _, ok := localNameIdMap[blk.Param0[i]]; ok {
+		id := blk.Param0[i]
+		if isSpecial(id) {
 			continue
 		}
 
-		localNameIdMap[blk.Param0[i]] = nameIdMap[blk.Param0[i]]
+		if _, ok := localNameIdMap[id]; ok {
+			continue
+		}
+
+		name, ok := nameIdMap[id]
+		if !ok {
+			panic(ErrInvalidNodeId{id})
+		}
+
+		localNameIdMap[id] = name
 	}
 
 	var nameIdMapCount = uint16(len(localNameIdMap))

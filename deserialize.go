@@ -4,7 +4,6 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"github.com/anon55555/mt"
 	"io"
 )
@@ -17,22 +16,6 @@ var (
 	ErrInvalidNameIdMapVer = errors.New("invalid name id mapping version")
 	ErrInvalidStaticObjVer = errors.New("invalid static object version")
 )
-
-type ErrInvalidNodeName struct {
-	Name string
-}
-
-func (e ErrInvalidNodeName) Error() string {
-	return fmt.Sprintf("invalid node \"%v\"", e.Name)
-}
-
-type ErrInvalidNodeId struct {
-	Id mt.Content
-}
-
-func (e ErrInvalidNodeId) Error() string {
-	return fmt.Sprintf("invalid node %v", e.Id)
-}
 
 func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 	var blk = &MapBlk{}
@@ -261,17 +244,20 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 	}
 
 	for i := 0; i < 4096; i++ {
-		name, ok := nameIdMap[blk.Param0[i]]
-		if !ok {
-			panic(ErrInvalidNodeId{blk.Param0[i]})
+		id := blk.Param0[i]
+		if isSpecial(id) {
+			continue
 		}
 
-		id, ok := idNameMap[name]
+		name, ok := nameIdMap[id]
+		if !ok {
+			panic(ErrInvalidNodeId{id})
+		}
+
+		blk.Param0[i], ok = idNameMap[name]
 		if !ok {
 			panic(ErrInvalidNodeName{name})
 		}
-
-		blk.Param0[i] = id
 	}
 
 	return blk
