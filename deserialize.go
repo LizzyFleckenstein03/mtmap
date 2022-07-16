@@ -9,38 +9,15 @@ import (
 	"io"
 )
 
-type MapBlk struct {
-	mt.MapBlk
-	Flags            MapBlkFlags
-	LightingComplete uint16
-	StaticObjs       []StaticObj
-	Timestamp        uint32
-}
-
-type MapBlkFlags uint8
-
-const (
-	IsUnderground MapBlkFlags = 1 << iota
-	DayNightDiffers
-	NotGenerated = 1 << 4
-)
-
-var SerializeVer uint8 = 28
-
 var (
 	ErrInvalidSerializeVer = errors.New("invalid serialize version")
 	ErrInvalidContentWidth = errors.New("invalid content width")
 	ErrInvalidParamsWidth  = errors.New("invalid params width")
 	ErrInvalidNodeMetaVer  = errors.New("invalid node meta version")
 	ErrInvalidNameIdMapVer = errors.New("invalid name id mapping version")
+	ErrInvalidStaticObjVer = errors.New("invalid static object version")
 	ErrInvalidNode         = errors.New("invalid node")
 )
-
-type StaticObj struct {
-	Type uint8
-	Pos  [3]float32
-	Data string
-}
 
 func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err error) {
 	r := bytes.NewReader(data)
@@ -68,7 +45,7 @@ func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err
 		return nil, err
 	}
 
-	if contentWidth != 2 {
+	if contentWidth != ContentWidth {
 		return nil, ErrInvalidContentWidth
 	}
 
@@ -77,7 +54,7 @@ func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err
 		return nil, err
 	}
 
-	if paramsWidth != 2 {
+	if paramsWidth != ParamsWidth {
 		return nil, ErrInvalidParamsWidth
 	}
 
@@ -112,7 +89,7 @@ func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err
 			return nil, err
 		}
 
-		if version != 2 {
+		if version != NodeMetaVer {
 			return nil, ErrInvalidNodeMetaVer
 		}
 
@@ -187,6 +164,10 @@ func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err
 		return nil, err
 	}
 
+	if staticObjVer != StaticObjVer {
+		return nil, ErrInvalidStaticObjVer
+	}
+
 	var staticObjCount uint16
 	if err := binary.Read(r, binary.BigEndian, &staticObjCount); err != nil {
 		return nil, err
@@ -235,7 +216,7 @@ func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err
 		return nil, err
 	}
 
-	if nameIdMapVer != 0 {
+	if nameIdMapVer != NameIdMapVer {
 		return nil, ErrInvalidNameIdMapVer
 	}
 
@@ -252,7 +233,7 @@ func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err
 			return nil, err
 		}
 
-		var nameLen mt.Content
+		var nameLen uint16
 		if err := binary.Read(r, binary.BigEndian, &nameLen); err != nil {
 			return nil, err
 		}
