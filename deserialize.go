@@ -226,7 +226,7 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 	nameIdMap := make(map[mt.Content]string)
 
 	for i := uint16(0); i < nameIdMapCount; i++ {
-		var id uint16
+		var id mt.Content
 		if err := binary.Read(r, binary.BigEndian, &id); err != nil {
 			panic(err)
 		}
@@ -241,7 +241,7 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 			panic(err)
 		}
 
-		nameIdMap[mt.Content(id)] = string(name)
+		nameIdMap[id] = string(name)
 	}
 
 	for i := 0; i < 4096; i++ {

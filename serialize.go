@@ -151,14 +151,14 @@ func Serialize(blk *MapBlk, w io.Writer, idNameMap map[string]mt.Content) {
 		panic(err)
 	}
 
-	var nameIdMapCount = uint16(len(idNameMap))
-	if err := binary.Write(w, binary.BigEndian, &nameIdMapCount); err != nil {
-		panic(err)
-	}
-
 	var exists = make(map[mt.Content]struct{})
 	for i := 0; i < 4096; i++ {
 		exists[blk.Param0[i]] = struct{}{}
+	}
+
+	var nameIdMapCount = uint16(len(exists))
+	if err := binary.Write(w, binary.BigEndian, &nameIdMapCount); err != nil {
+		panic(err)
 	}
 
 	for name, id := range idNameMap {
