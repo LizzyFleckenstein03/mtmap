@@ -1,7 +1,6 @@
 package mtmap
 
 import (
-	"bytes"
 	"compress/zlib"
 	"encoding/binary"
 	"errors"
@@ -19,8 +18,7 @@ var (
 	ErrInvalidNode         = errors.New("invalid node")
 )
 
-func Deserialize(data []byte, idNameMap map[string]mt.Content) (blk *MapBlk, err error) {
-	r := bytes.NewReader(data)
+func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err error) {
 	blk = &MapBlk{}
 
 	var ver uint8
