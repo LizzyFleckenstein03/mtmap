@@ -37,6 +37,14 @@ func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 			panic(err)
 		}
 
+		if err := binary.Write(zw, binary.BigEndian, &blk.Param1); err != nil {
+			panic(err)
+		}
+
+		if err := binary.Write(zw, binary.BigEndian, &blk.Param2); err != nil {
+			panic(err)
+		}
+
 		if err := zw.Close(); err != nil {
 			panic(err)
 		}

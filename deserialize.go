@@ -65,7 +65,11 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 			panic(err)
 		}
 
-		if _, err := io.Copy(io.Discard, r); err != nil {
+		if err := binary.Read(r, binary.BigEndian, &blk.Param1); err != nil {
+			panic(err)
+		}
+
+		if err := binary.Read(r, binary.BigEndian, &blk.Param2); err != nil {
 			panic(err)
 		}
 
@@ -147,10 +151,6 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 
 				blk.NodeMetas[pos] = data
 			}
-		}
-
-		if _, err := io.Copy(io.Discard, r); err != nil {
-			panic(err)
 		}
 
 		if err := r.Close(); err != nil {
