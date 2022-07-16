@@ -223,7 +223,7 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 		panic(err)
 	}
 
-	nameIdMap := make(map[mt.Content]string)
+	var nameIdMap = make(map[mt.Content]string)
 
 	for i := uint16(0); i < nameIdMapCount; i++ {
 		var id mt.Content

@@ -8,7 +8,7 @@ import (
 	"io"
 )
 
-func Serialize(blk *MapBlk, w io.Writer, idNameMap map[string]mt.Content) {
+func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 	if err := binary.Write(w, binary.BigEndian, &SerializeVer); err != nil {
 		panic(err)
 	}
@@ -151,21 +151,21 @@ func Serialize(blk *MapBlk, w io.Writer, idNameMap map[string]mt.Content) {
 		panic(err)
 	}
 
-	var exists = make(map[mt.Content]struct{})
+	var localNameIdMap = make(map[mt.Content]string)
 	for i := 0; i < 4096; i++ {
-		exists[blk.Param0[i]] = struct{}{}
+		if _, ok := localNameIdMap[blk.Param0[i]]; ok {
+			continue
+		}
+
+		localNameIdMap[blk.Param0[i]] = nameIdMap[blk.Param0[i]]
 	}
 
-	var nameIdMapCount = uint16(len(exists))
+	var nameIdMapCount = uint16(len(localNameIdMap))
 	if err := binary.Write(w, binary.BigEndian, &nameIdMapCount); err != nil {
 		panic(err)
 	}
 
-	for name, id := range idNameMap {
-		if _, ok := exists[id]; !ok {
-			continue
-		}
-
+	for id, name := range localNameIdMap {
 		if err := binary.Write(w, binary.BigEndian, &id); err != nil {
 			panic(err)
 		}
