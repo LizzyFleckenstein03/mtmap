@@ -158,11 +158,7 @@ func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 		panic(err)
 	}
 
-	var localNameIdMap = map[mt.Content]string{
-		mt.Unknown: "unknown",
-		mt.Air:     "air",
-		mt.Ignore:  "ignore",
-	}
+	var localNameIdMap = make(map[mt.Content]string)
 
 	for i := 0; i < 4096; i++ {
 		id := blk.Param0[i]
@@ -170,9 +166,21 @@ func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 			continue
 		}
 
-		name, ok := nameIdMap[id]
-		if !ok {
-			panic(ErrInvalidNodeId{id})
+		var name string
+		var ok bool
+
+		switch id {
+		case mt.Unknown:
+			name = "unknown"
+		case mt.Air:
+			name = "air"
+		case mt.Ignore:
+			name = "ignore"
+		default:
+			name, ok = nameIdMap[id]
+			if !ok {
+				panic(ErrInvalidNodeId{id})
+			}
 		}
 
 		localNameIdMap[id] = name
