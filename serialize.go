@@ -50,53 +50,60 @@ func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 		var buf bytes.Buffer
 		zw := zlib.NewWriter(&buf)
 
-		if err := binary.Write(zw, binary.BigEndian, &NodeMetaVer); err != nil {
+		var version = NodeMetaVer
+		if len(blk.NodeMetas) == 0 {
+			version = 0
+		}
+
+		if err := binary.Write(zw, binary.BigEndian, &version); err != nil {
 			panic(err)
 		}
 
-		var count = uint16(len(blk.NodeMetas))
-		if err := binary.Write(zw, binary.BigEndian, &count); err != nil {
-			panic(err)
-		}
-
-		for pos, data := range blk.NodeMetas {
-			if err := binary.Write(zw, binary.BigEndian, &pos); err != nil {
+		if version != 0 {
+			var count = uint16(len(blk.NodeMetas))
+			if err := binary.Write(zw, binary.BigEndian, &count); err != nil {
 				panic(err)
 			}
 
-			var num = uint32(len(data.Fields))
-			if err := binary.Write(zw, binary.BigEndian, &num); err != nil {
-				panic(err)
-			}
-
-			for _, field := range data.Fields {
-				var lenName = uint16(len(field.Name))
-				if err := binary.Write(zw, binary.BigEndian, &lenName); err != nil {
+			for pos, data := range blk.NodeMetas {
+				if err := binary.Write(zw, binary.BigEndian, &pos); err != nil {
 					panic(err)
 				}
 
-				var name = []byte(field.Name)
-				if err := binary.Write(zw, binary.BigEndian, &name); err != nil {
+				var num = uint32(len(data.Fields))
+				if err := binary.Write(zw, binary.BigEndian, &num); err != nil {
 					panic(err)
 				}
 
-				var lenValue = uint32(len(field.Value))
-				if err := binary.Write(zw, binary.BigEndian, &lenValue); err != nil {
-					panic(err)
+				for _, field := range data.Fields {
+					var lenName = uint16(len(field.Name))
+					if err := binary.Write(zw, binary.BigEndian, &lenName); err != nil {
+						panic(err)
+					}
+
+					var name = []byte(field.Name)
+					if err := binary.Write(zw, binary.BigEndian, &name); err != nil {
+						panic(err)
+					}
+
+					var lenValue = uint32(len(field.Value))
+					if err := binary.Write(zw, binary.BigEndian, &lenValue); err != nil {
+						panic(err)
+					}
+
+					var value = []byte(field.Value)
+					if err := binary.Write(zw, binary.BigEndian, &value); err != nil {
+						panic(err)
+					}
+
+					if err := binary.Write(zw, binary.BigEndian, &field.Private); err != nil {
+						panic(err)
+					}
 				}
 
-				var value = []byte(field.Value)
-				if err := binary.Write(zw, binary.BigEndian, &value); err != nil {
+				if err := data.Inv.Serialize(zw); err != nil {
 					panic(err)
 				}
-
-				if err := binary.Write(zw, binary.BigEndian, &field.Private); err != nil {
-					panic(err)
-				}
-			}
-
-			if err := data.Inv.Serialize(zw); err != nil {
-				panic(err)
 			}
 		}
 

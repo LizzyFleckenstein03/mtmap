@@ -86,65 +86,67 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 			panic(err)
 		}
 
-		if version != NodeMetaVer {
-			panic(ErrInvalidNodeMetaVer)
-		}
+		if version != 0 {
+			if version != NodeMetaVer {
+				panic(ErrInvalidNodeMetaVer)
+			}
 
-		var count uint16
-		if err := binary.Read(r, binary.BigEndian, &count); err != nil {
-			panic(err)
-		}
-
-		for i := uint16(0); i < count; i++ {
-			var pos uint16
-			if err := binary.Read(r, binary.BigEndian, &pos); err != nil {
+			var count uint16
+			if err := binary.Read(r, binary.BigEndian, &count); err != nil {
 				panic(err)
 			}
 
-			var num uint32
-			if err := binary.Read(r, binary.BigEndian, &num); err != nil {
-				panic(err)
+			for i := uint16(0); i < count; i++ {
+				var pos uint16
+				if err := binary.Read(r, binary.BigEndian, &pos); err != nil {
+					panic(err)
+				}
+
+				var num uint32
+				if err := binary.Read(r, binary.BigEndian, &num); err != nil {
+					panic(err)
+				}
+
+				var data = &mt.NodeMeta{}
+				data.Fields = make([]mt.NodeMetaField, 0)
+				for j := uint32(0); j < num; j++ {
+					var field mt.NodeMetaField
+
+					var lenName uint16
+					if err := binary.Read(r, binary.BigEndian, &lenName); err != nil {
+						panic(err)
+					}
+
+					var name = make([]byte, lenName)
+					if err := binary.Read(r, binary.BigEndian, &name); err != nil {
+						panic(err)
+					}
+					field.Name = string(name)
+
+					var lenValue uint32
+					if err := binary.Read(r, binary.BigEndian, &lenValue); err != nil {
+						panic(err)
+					}
+
+					var value = make([]byte, lenValue)
+					if err := binary.Read(r, binary.BigEndian, &value); err != nil {
+						panic(err)
+					}
+					field.Value = string(value)
+
+					if err := binary.Read(r, binary.BigEndian, &field.Private); err != nil {
+						panic(err)
+					}
+
+					data.Fields = append(data.Fields, field)
+				}
+
+				if err := data.Inv.Deserialize(r); err != nil {
+					panic(err)
+				}
+
+				blk.NodeMetas[pos] = data
 			}
-
-			var data = &mt.NodeMeta{}
-			data.Fields = make([]mt.NodeMetaField, 0)
-			for j := uint32(0); j < num; j++ {
-				var field mt.NodeMetaField
-
-				var lenName uint16
-				if err := binary.Read(r, binary.BigEndian, &lenName); err != nil {
-					panic(err)
-				}
-
-				var name = make([]byte, lenName)
-				if err := binary.Read(r, binary.BigEndian, &name); err != nil {
-					panic(err)
-				}
-				field.Name = string(name)
-
-				var lenValue uint32
-				if err := binary.Read(r, binary.BigEndian, &lenValue); err != nil {
-					panic(err)
-				}
-
-				var value = make([]byte, lenValue)
-				if err := binary.Read(r, binary.BigEndian, &value); err != nil {
-					panic(err)
-				}
-				field.Value = string(value)
-
-				if err := binary.Read(r, binary.BigEndian, &field.Private); err != nil {
-					panic(err)
-				}
-
-				data.Fields = append(data.Fields, field)
-			}
-
-			if err := data.Inv.Deserialize(r); err != nil {
-				panic(err)
-			}
-
-			blk.NodeMetas[pos] = data
 		}
 
 		if _, err := io.Copy(io.Discard, r); err != nil {
