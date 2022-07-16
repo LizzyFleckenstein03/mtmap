@@ -18,60 +18,60 @@ var (
 	ErrInvalidNode         = errors.New("invalid node")
 )
 
-func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err error) {
-	blk = &MapBlk{}
+func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
+	var blk = &MapBlk{}
 
 	var ver uint8
 	if err := binary.Read(r, binary.BigEndian, &ver); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if ver != SerializeVer {
-		return nil, ErrInvalidSerializeVer
+		panic(ErrInvalidSerializeVer)
 	}
 
 	if err := binary.Read(r, binary.BigEndian, &blk.Flags); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if err := binary.Read(r, binary.BigEndian, &blk.LightingComplete); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	var contentWidth uint8
 	if err := binary.Read(r, binary.BigEndian, &contentWidth); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if contentWidth != ContentWidth {
-		return nil, ErrInvalidContentWidth
+		panic(ErrInvalidContentWidth)
 	}
 
 	var paramsWidth uint8
 	if err := binary.Read(r, binary.BigEndian, &paramsWidth); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if paramsWidth != ParamsWidth {
-		return nil, ErrInvalidParamsWidth
+		panic(ErrInvalidParamsWidth)
 	}
 
 	{
 		r, err := zlib.NewReader(r)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		if err := binary.Read(r, binary.BigEndian, &blk.Param0); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		if _, err := io.Copy(io.Discard, r); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		if err := r.Close(); err != nil {
-			return nil, err
+			panic(err)
 		}
 	}
 
@@ -79,32 +79,32 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err
 	{
 		r, err := zlib.NewReader(r)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		var version uint8
 		if err := binary.Read(r, binary.BigEndian, &version); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		if version != NodeMetaVer {
-			return nil, ErrInvalidNodeMetaVer
+			panic(ErrInvalidNodeMetaVer)
 		}
 
 		var count uint16
 		if err := binary.Read(r, binary.BigEndian, &count); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		for i := uint16(0); i < count; i++ {
 			var pos uint16
 			if err := binary.Read(r, binary.BigEndian, &pos); err != nil {
-				return nil, err
+				panic(err)
 			}
 
 			var num uint32
 			if err := binary.Read(r, binary.BigEndian, &num); err != nil {
-				return nil, err
+				panic(err)
 			}
 
 			var data = &mt.NodeMeta{}
@@ -114,61 +114,61 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err
 
 				var lenName uint16
 				if err := binary.Read(r, binary.BigEndian, &lenName); err != nil {
-					return nil, err
+					panic(err)
 				}
 
 				var name = make([]byte, lenName)
 				if err := binary.Read(r, binary.BigEndian, &name); err != nil {
-					return nil, err
+					panic(err)
 				}
 				field.Name = string(name)
 
 				var lenValue uint32
 				if err := binary.Read(r, binary.BigEndian, &lenValue); err != nil {
-					return nil, err
+					panic(err)
 				}
 
 				var value = make([]byte, lenValue)
 				if err := binary.Read(r, binary.BigEndian, &value); err != nil {
-					return nil, err
+					panic(err)
 				}
 				field.Value = string(value)
 
 				if err := binary.Read(r, binary.BigEndian, &field.Private); err != nil {
-					return nil, err
+					panic(err)
 				}
 
 				data.Fields = append(data.Fields, field)
 			}
 
 			if err := data.Inv.Deserialize(r); err != nil {
-				return nil, err
+				panic(err)
 			}
 
 			blk.NodeMetas[pos] = data
 		}
 
 		if _, err := io.Copy(io.Discard, r); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		if err := r.Close(); err != nil {
-			return nil, err
+			panic(err)
 		}
 	}
 
 	var staticObjVer uint8
 	if err := binary.Read(r, binary.BigEndian, &staticObjVer); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if staticObjVer != StaticObjVer {
-		return nil, ErrInvalidStaticObjVer
+		panic(ErrInvalidStaticObjVer)
 	}
 
 	var staticObjCount uint16
 	if err := binary.Read(r, binary.BigEndian, &staticObjCount); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	blk.StaticObjs = make([]StaticObj, 0)
@@ -176,12 +176,12 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err
 		var obj StaticObj
 
 		if err := binary.Read(r, binary.BigEndian, &obj.Type); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		var pos [3]int32
 		if err := binary.Read(r, binary.BigEndian, &pos); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		obj.Pos = [3]float32{
@@ -192,12 +192,12 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err
 
 		var dataLen uint16
 		if err := binary.Read(r, binary.BigEndian, &dataLen); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		var data = make([]byte, dataLen)
 		if err := binary.Read(r, binary.BigEndian, &data); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		obj.Data = string(data)
@@ -206,21 +206,21 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err
 	}
 
 	if err := binary.Read(r, binary.BigEndian, &blk.Timestamp); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	var nameIdMapVer uint8
 	if err := binary.Read(r, binary.BigEndian, &nameIdMapVer); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if nameIdMapVer != NameIdMapVer {
-		return nil, ErrInvalidNameIdMapVer
+		panic(ErrInvalidNameIdMapVer)
 	}
 
 	var nameIdMapCount uint16
 	if err := binary.Read(r, binary.BigEndian, &nameIdMapCount); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	nameIdMap := make(map[mt.Content]string)
@@ -228,17 +228,17 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err
 	for i := uint16(0); i < nameIdMapCount; i++ {
 		var id uint16
 		if err := binary.Read(r, binary.BigEndian, &id); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		var nameLen uint16
 		if err := binary.Read(r, binary.BigEndian, &nameLen); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		var name = make([]byte, nameLen)
 		if err := binary.Read(r, binary.BigEndian, &name); err != nil {
-			return nil, err
+			panic(err)
 		}
 
 		nameIdMap[mt.Content(id)] = string(name)
@@ -247,16 +247,16 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) (blk *MapBlk, err
 	for i := 0; i < 4096; i++ {
 		name, ok := nameIdMap[blk.Param0[i]]
 		if !ok {
-			return nil, ErrInvalidNode
+			panic(ErrInvalidNode)
 		}
 
 		id, ok := idNameMap[name]
 		if !ok {
-			return nil, ErrInvalidNode
+			panic(ErrInvalidNode)
 		}
 
 		blk.Param0[i] = id
 	}
 
-	return
+	return blk
 }
