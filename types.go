@@ -1,7 +1,6 @@
 package mtmap
 
 import (
-	"fmt"
 	"github.com/anon55555/mt"
 )
 
@@ -34,20 +33,4 @@ type StaticObj struct {
 	Type uint8
 	Pos  [3]float32
 	Data string
-}
-
-type ErrInvalidNodeName struct {
-	Name string
-}
-
-func (e ErrInvalidNodeName) Error() string {
-	return fmt.Sprintf("invalid node \"%v\"", e.Name)
-}
-
-type ErrInvalidNodeId struct {
-	Id mt.Content
-}
-
-func (e ErrInvalidNodeId) Error() string {
-	return fmt.Sprintf("invalid node %v", e.Id)
 }

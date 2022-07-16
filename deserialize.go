@@ -250,7 +250,7 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 
 		name, ok := nameIdMap[id]
 		if !ok {
-			panic(ErrInvalidNodeId{id})
+			name = "unknown"
 		}
 
 		switch name {
@@ -263,7 +263,7 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 		default:
 			id, ok = idNameMap[name]
 			if !ok {
-				panic(ErrInvalidNodeName{name})
+				id = mt.Unknown
 			}
 		}
 

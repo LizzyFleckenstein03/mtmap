@@ -179,7 +179,8 @@ func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 		default:
 			name, ok = nameIdMap[id]
 			if !ok {
-				panic(ErrInvalidNodeId{id})
+				id = mt.Unknown
+				name = "unknown"
 			}
 		}
 
