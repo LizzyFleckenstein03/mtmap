@@ -11,3 +11,9 @@ func (mb *MapBlk) PeekNode(i int) mt.Node {
 		Param2: mb.Param2[i],
 	}
 }
+
+func (mb *MapBlk) PokeNode(i int, node mt.Node) {
+	mb.Param0[i] = node.Param0
+	mb.Param1[i] = node.Param1
+	mb.Param2[i] = node.Param2
+}
