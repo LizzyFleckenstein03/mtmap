@@ -51,7 +51,3 @@ type ErrInvalidNodeId struct {
 func (e ErrInvalidNodeId) Error() string {
 	return fmt.Sprintf("invalid node %v", e.Id)
 }
-
-func isSpecial(id mt.Content) bool {
-	return id >= 125 && id <= 127
-}

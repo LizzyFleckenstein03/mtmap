@@ -247,19 +247,27 @@ func Deserialize(r io.Reader, idNameMap map[string]mt.Content) *MapBlk {
 
 	for i := 0; i < 4096; i++ {
 		id := blk.Param0[i]
-		if isSpecial(id) {
-			continue
-		}
 
 		name, ok := nameIdMap[id]
 		if !ok {
 			panic(ErrInvalidNodeId{id})
 		}
 
-		blk.Param0[i], ok = idNameMap[name]
-		if !ok {
-			panic(ErrInvalidNodeName{name})
+		switch name {
+		case "unknown":
+			id = mt.Unknown
+		case "air":
+			id = mt.Air
+		case "ignore":
+			id = mt.Ignore
+		default:
+			id, ok = idNameMap[name]
+			if !ok {
+				panic(ErrInvalidNodeName{name})
+			}
 		}
+
+		blk.Param0[i] = id
 	}
 
 	return blk

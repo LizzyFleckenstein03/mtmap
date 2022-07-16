@@ -158,13 +158,14 @@ func Serialize(blk *MapBlk, w io.Writer, nameIdMap map[mt.Content]string) {
 		panic(err)
 	}
 
-	var localNameIdMap = make(map[mt.Content]string)
+	var localNameIdMap = map[mt.Content]string{
+		mt.Unknown: "unknown",
+		mt.Air:     "air",
+		mt.Ignore:  "ignore",
+	}
+
 	for i := 0; i < 4096; i++ {
 		id := blk.Param0[i]
-		if isSpecial(id) {
-			continue
-		}
-
 		if _, ok := localNameIdMap[id]; ok {
 			continue
 		}
